@@ -1,0 +1,49 @@
+# output dirs
+/target/
+/target/**
+/dll/
+/testbin/
+/out/
+/tmp/
+
+# rustfmt
+**/*.rs.bk
+
+/expand.rs
+
+/examples
+/_internal/
+
+_*
+
+# editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# operating system
+.DS_Store
+Thumbs.db
+
+# logs and temp artifacts
+*.log
+*.tmp
+*.temp
+
+# generic build artifacts
+*.class
+*.jar
+*.war
+*.dll
+*.exe
+*.so
+*.dylib
+*.a
+*.lib
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exp
