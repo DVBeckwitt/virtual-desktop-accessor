@@ -1,12 +1,15 @@
 ; AutoHotkey v1 script
-; Bind Win+1..Win+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
+; Bind Ctrl+1..Ctrl+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
 
 #NoEnv
 #UseHook On
+#InstallKeybdHook
 #SingleInstance Force
 SetWorkingDir, %A_ScriptDir%
 SetBatchLines, -1
 FileGetTime, LastScriptModTime, %A_ScriptFullPath%, M
+RestartShortcutPath := "C:\Users\Kenpo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\quick-desktop-hotkeys.ahk - Shortcut.lnk"
+FallbackScriptPath := "C:\Users\Kenpo\OneDrive\Documents\GitHub\virtual-desktop-accessor\quick-desktop-hotkeys.ahk"
 
 ; Load the DLL from your installed location
 VDA_PATH := "C:\Users\Kenpo\OneDrive\VirtualDesktopAccessor-rust\VirtualDesktopAccessor.dll"
@@ -50,10 +53,48 @@ DISCORD_PROC_HINTS := "Discord.exe|discord.exe|DiscordCanary.exe|DiscordPTB.exe"
 DISCORD_VERSIONED_RUN_HINT := A_LocalAppData . "\Discord\app-1.0.9231\Discord.exe"
 DISCORD_RUN_HINTS := A_LocalAppData . "\Discord\Update.exe|C:\Users\Kenpo\AppData\Local\Programs\Discord\Discord.exe|" . DISCORD_VERSIONED_RUN_HINT
 DISCORD_PATH_HINTS := "discordapp|discord"
+PHONE_LINK_RUN_HINT := "ms-phone:"
 NEOVIM_TITLE_HINTS := "Neovim|Neovide|NeoVim"
 NEOVIM_PROC_HINTS := "nvim.exe|nvim-qt.exe|Neovide.exe|neovim.exe|Neovim.exe|neovide.exe"
 NEOVIM_RUN_HINTS := A_ProgramFiles . "\Neovim\bin\nvim-qt.exe|" A_ProgramFiles . "\Neovim\bin\nvim.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim-qt.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim.exe|nvim-qt.exe|nvim.exe"
 HotkeysEnabled := 1
+PendingCtrlDPress := 0
+
+SendPlainPageUp() {
+    leftCtrlDown := GetKeyState("LCtrl", "P")
+    rightCtrlDown := GetKeyState("RCtrl", "P")
+    if (leftCtrlDown) {
+        SendInput, {LCtrl up}
+    }
+    if (rightCtrlDown) {
+        SendInput, {RCtrl up}
+    }
+    SendInput, ^{Home}
+    if (leftCtrlDown) {
+        SendInput, {LCtrl down}
+    }
+    if (rightCtrlDown) {
+        SendInput, {RCtrl down}
+    }
+}
+
+SendPlainPageDown() {
+    leftCtrlDown := GetKeyState("LCtrl", "P")
+    rightCtrlDown := GetKeyState("RCtrl", "P")
+    if (leftCtrlDown) {
+        SendInput, {LCtrl up}
+    }
+    if (rightCtrlDown) {
+        SendInput, {RCtrl up}
+    }
+    SendInput, ^{End}
+    if (leftCtrlDown) {
+        SendInput, {LCtrl down}
+    }
+    if (rightCtrlDown) {
+        SendInput, {RCtrl down}
+    }
+}
 
 GoToDesktopIfExists(index) {
     global GetDesktopCountProc, GoToDesktopNumberProc
@@ -388,12 +429,16 @@ GetSelectionOrClipboardText() {
 
     Clipboard := ""
     SendInput, ^c
-    ClipWait, 0.2
-    selectedText := Clipboard
+    ClipWait, 0.5
+    if (ErrorLevel) {
+        selectedText := ""
+    } else {
+        selectedText := Clipboard
+    }
     Clipboard := oldClipboardAll
 
     if (Trim(selectedText) != "") {
-        return Trim(selectedText)
+        return selectedText
     }
 
     return Trim(oldClipboard)
@@ -401,7 +446,15 @@ GetSelectionOrClipboardText() {
 
 OpenChatGPTWithSelectionOrClipboard() {
     textToSend := GetSelectionOrClipboardText()
-    FocusChatGPT(0)
+    chatHwnd := FocusChatGPT(0)
+    if (!chatHwnd) {
+        return
+    }
+    WinActivate, ahk_id %chatHwnd%
+    WinWaitActive, ahk_id %chatHwnd%, , 2
+    if (ErrorLevel) {
+        return
+    }
     Sleep, 120
     SendInput, ^n
     Sleep, 100
@@ -858,6 +911,7 @@ FocusChatGPT(pullToCurrent := 0) {
         }
         Sleep, 40
     }
+    return hwnd
 }
 
 FindDiscordWindow() {
@@ -1233,6 +1287,10 @@ OpenPowerShellHere() {
     Run, powershell.exe -NoExit -NoProfile, %explorerPath%
 }
 
+OpenPhoneLink() {
+    Run, %PHONE_LINK_RUN_HINT%
+}
+
 TurnOffMonitors() {
     ; Launch the built-in black screen saver directly.
     screensaverPath := A_WinDir . "\System32\scrnsave.scr"
@@ -1269,6 +1327,13 @@ SetHotkeysEnabled(state) {
 __ClearHotkeyStateTooltip:
     ToolTip
 return
+__CtrlD_PageUp:
+    global PendingCtrlDPress
+    if (PendingCtrlDPress) {
+        PendingCtrlDPress := 0
+        SendPlainPageUp()
+    }
+    return
 ^!F10::
     SetHotkeysEnabled(0)
     return
@@ -1282,19 +1347,19 @@ return
     return
 
 #If HotkeysEnabled
-#1::GoToDesktopIfExists(0)
-#2::GoToDesktopIfExists(1)
-#3::GoToDesktopIfExists(2)
-#4::GoToDesktopIfExists(3)
-#5::GoToDesktopIfExists(4)
-#6::GoToDesktopIfExists(5)
-#7::GoToDesktopIfExists(6)
-#8::GoToDesktopIfExists(7)
-#9::GoToDesktopIfExists(8)
-#0::GoToDesktopIfExists(9)
+^1::GoToDesktopIfExists(0)
+^2::GoToDesktopIfExists(1)
+^3::GoToDesktopIfExists(2)
+^4::GoToDesktopIfExists(3)
+^5::GoToDesktopIfExists(4)
+^6::GoToDesktopIfExists(5)
+^7::GoToDesktopIfExists(6)
+^8::GoToDesktopIfExists(7)
+^9::GoToDesktopIfExists(8)
+^0::GoToDesktopIfExists(9)
 #c::FocusCodex(0)
 ^#c::FocusCodex(1)
-!-:
+!-::
     SendInput, {U+2014}
     return
 LAlt::
@@ -1321,13 +1386,34 @@ RAlt & Tab::
     SendInput, {PgDn 4}
     return
 #If HotkeysEnabled
+#InputLevel 100
+$^d::
+    global PendingCtrlDPress
+    if (PendingCtrlDPress) {
+        PendingCtrlDPress := 0
+        SetTimer, __CtrlD_PageUp, Off
+        SendPlainPageDown()
+        return
+    }
+    PendingCtrlDPress := 1
+    SetTimer, __CtrlD_PageUp, -250
+    return
+#InputLevel 0
 #m::FocusOutlook(0)
 ^#m::FocusOutlook(1)
 #b::FocusBraveNightlyOnSecondDesktop(0)
 ^#b::FocusBraveNightlyOnSecondDesktop(1)
 #w::FocusRustDesk(0)
 ^#w::FocusRustDesk(1)
+#o::OpenPhoneLink()
+#If (HotkeysEnabled && !GetKeyState("Alt", "P") && !GetKeyState("Ctrl", "P"))
 #x::FocusChatGPT(0)
+#If HotkeysEnabled
+!x::OpenChatGPTWithSelectionOrClipboard()
+#!x::OpenChatGPTWithSelectionOrClipboard()
+^#x::
+    OpenChatGPTWithSelectionOrClipboard()
+    return
 #+x::FocusChatGPT(1)
 #InputLevel 100
 #f::
@@ -1366,10 +1452,17 @@ MButton & WheelDown::
     GoToPrevDesktop()
     return
 ^!r::
-    FileGetTime, CurrentScriptModTime, %A_ScriptFullPath%, M
-    if (CurrentScriptModTime != LastScriptModTime) {
-        LastScriptModTime := CurrentScriptModTime
-        Reload
-    } else {
-        Reload
+    ReloadQuickDesktopScript()
+    return
+
+ReloadQuickDesktopScript() {
+    global RestartShortcutPath, FallbackScriptPath
+
+    scriptToRun := FallbackScriptPath
+    if (FileExist(RestartShortcutPath)) {
+        scriptToRun := RestartShortcutPath
     }
+
+    Run, %scriptToRun%
+    ExitApp
+}
