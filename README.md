@@ -1,38 +1,88 @@
-# VirtualDesktopAccessor.dll
+# virtual-desktop-accessor
 
-DLL for accessing Windows 11 (requires at least 24H2 26100.2605, tested with 25H2 OS Build 26200.7171) Virtual Desktop features from e.g. AutoHotkey. MIT Licensed, see [LICENSE](LICENSE.txt) &copy; Jari Pennanen, 2015-2024
+This repository combines three related pieces:
 
-This repository also contains [Rust library `winvd`](./README-crate.md) for accessing the Virtual Desktop via Rust bindings.
+- `src/`: the `winvd` Rust crate for Windows 11 virtual desktop access
+- `dll/`: a `cdylib` wrapper that exports the C ABI used by AutoHotkey
+- `quick-desktop-hotkeys.ahk`: a machine-specific AutoHotkey v1 script built on top of the DLL
 
-## AutoHotkey example here:
+The upstream Rust crate documentation still lives in [README-crate.md](./README-crate.md). This top-level README focuses on the workspace layout in this repository and the AutoHotkey workflow that is being maintained here.
 
-- [AutoHotkey V1 example.ahk ⬅️](./example.ahk)
-- [AutoHotkey V2 example.ah2 ⬅️](./example.ah2)
+## Requirements
 
-### Quick desktop hotkeys
+- Windows 11 24H2 or newer
+- Rust if you want to build the DLL from source
+- AutoHotkey v1 for `quick-desktop-hotkeys.ahk`
+- AutoHotkey v1 or v2 for the example scripts, depending on which example you run
 
-- `quick-desktop-hotkeys.ahk` binds `Win+B` to focus Brave Nightly and switch it to the **first virtual desktop** (desktop index `0`).
+## Repository Layout
 
-## Download from releases:
+- `src/`: core `winvd` Rust implementation
+- `dll/`: builds `VirtualDesktopAccessor.dll`
+- `testbin/`: small `winit` harness for exercising desktop events during development
+- `example.ahk`: AutoHotkey v1 example that loads the built DLL from `target\debug`
+- `example.ah2`: AutoHotkey v2 example that loads the built DLL from `target\debug`
+- `quick-desktop-hotkeys.ahk`: personal desktop-navigation script with app-specific helpers
+- `note-IVirtualDesktopNotification.md`: implementation notes tied to the COM notification handling
 
-[Download the DLL from releases ⬇️](https://github.com/Ciantic/VirtualDesktopAccessor/releases/)
+## Building
 
-## Reference of exported DLL functions
+Build the full workspace:
 
-All functions return -1 in case of error.
+```powershell
+cargo build --workspace
+```
+
+Build release artifacts:
+
+```powershell
+cargo build --release --workspace
+```
+
+The DLL is produced by the `dll` crate and ends up at:
+
+- `target\debug\VirtualDesktopAccessor.dll`
+- `target\release\VirtualDesktopAccessor.dll`
+
+If you only need a prebuilt DLL, you can also use the upstream [release downloads](https://github.com/Ciantic/VirtualDesktopAccessor/releases/).
+
+## AutoHotkey Scripts
+
+The example scripts are generic DLL usage samples. The `quick-desktop-hotkeys.ahk` script is intentionally local and expects a few machine-specific paths near the top of the file to be adjusted before use:
+
+- `VDA_PATH`
+- `RestartShortcutPath`
+- `FallbackScriptPath`
+
+It also contains app-specific title and process hints for the windows it manages.
+
+### `quick-desktop-hotkeys.ahk` Highlights
+
+- `Ctrl+1` through `Ctrl+0`: jump to desktops 1 through 10
+- `Win+1` through `Win+0`: same desktop jump bindings on the Windows key
+- `MButton + WheelUp/WheelDown`: switch to the next or previous desktop
+- `Ctrl+Shift+WheelUp/WheelDown`: move the active window to the next or previous desktop
+- `Shift+WheelUp/WheelDown`: cycle tabs in supported apps, otherwise fall back to normal scrolling
+- `Ctrl+Alt+R`: reload the AutoHotkey script
+
+There are additional app-launch and focus shortcuts in the script for the local workstation setup.
+
+## Exported DLL Functions
+
+All exported functions return `-1` on error unless otherwise noted.
 
 ```rust
 fn GetCurrentDesktopNumber() -> i32
 fn GetDesktopCount() -> i32
-fn GetDesktopIdByNumber(number: i32) -> GUID // Untested
-fn GetDesktopNumberById(desktop_id: GUID) -> i32 // Untested
+fn GetDesktopIdByNumber(number: i32) -> GUID
+fn GetDesktopNumberById(desktop_id: GUID) -> i32
 fn GetWindowDesktopId(hwnd: HWND) -> GUID
 fn GetWindowDesktopNumber(hwnd: HWND) -> i32
 fn IsWindowOnCurrentVirtualDesktop(hwnd: HWND) -> i32
 fn MoveWindowToDesktopNumber(hwnd: HWND, desktop_number: i32) -> i32
 fn GoToDesktopNumber(desktop_number: i32) -> i32
-fn SetDesktopName(desktop_number: i32, in_name_ptr: *const i8) -> i32  // Win11 only
-fn GetDesktopName(desktop_number: i32, out_utf8_ptr: *mut u8, out_utf8_len: usize) -> i32 // Win11 only
+fn SetDesktopName(desktop_number: i32, in_name_ptr: *const i8) -> i32
+fn GetDesktopName(desktop_number: i32, out_utf8_ptr: *mut u8, out_utf8_len: usize) -> i32
 fn RegisterPostMessageHook(listener_hwnd: HWND, message_offset: u32) -> i32
 fn UnregisterPostMessageHook(listener_hwnd: HWND) -> i32
 fn IsPinnedWindow(hwnd: HWND) -> i32
@@ -42,6 +92,6 @@ fn IsPinnedApp(hwnd: HWND) -> i32
 fn PinApp(hwnd: HWND) -> i32
 fn UnPinApp(hwnd: HWND) -> i32
 fn IsWindowOnDesktopNumber(hwnd: HWND, desktop_number: i32) -> i32
-fn CreateDesktop() -> i32 // Win11 only
-fn RemoveDesktop(remove_desktop_number: i32, fallback_desktop_number: i32) -> i32 // Win11 only
+fn CreateDesktop() -> i32
+fn RemoveDesktop(remove_desktop_number: i32, fallback_desktop_number: i32) -> i32
 ```

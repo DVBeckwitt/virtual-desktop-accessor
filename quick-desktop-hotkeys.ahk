@@ -97,6 +97,39 @@ SendPlainPageDown() {
     }
 }
 
+IsActiveCodexWindow() {
+    global CODEx_PROC_HINTS, CODEx_TITLE_HINT
+
+    hwnd := WinExist("A")
+    if (!hwnd) {
+        return false
+    }
+
+    WinGet, processName, ProcessName, ahk_id %hwnd%
+    if (!ErrorLevel && processName != "") {
+        StringLower, processNameLower, processName
+        Loop, Parse, CODEx_PROC_HINTS, |
+        {
+            candidateProc := A_LoopField
+            if (candidateProc = "") {
+                continue
+            }
+
+            StringLower, candidateProcLower, candidateProc
+            if (processNameLower = candidateProcLower) {
+                return true
+            }
+        }
+    }
+
+    WinGetTitle, title, ahk_id %hwnd%
+    if (!ErrorLevel && title != "" && InStr(title, CODEx_TITLE_HINT)) {
+        return true
+    }
+
+    return false
+}
+
 HandleShiftWheel(direction) {
     leftShiftDown := GetKeyState("LShift", "P")
     rightShiftDown := GetKeyState("RShift", "P")
@@ -106,7 +139,13 @@ HandleShiftWheel(direction) {
     if (rightShiftDown) {
         SendInput, {RShift up}
     }
-    if (IsActiveTabScrollWindow()) {
+    if (IsActiveCodexWindow()) {
+        if (direction = "up") {
+            SendInput, ^+{[}
+        } else {
+            SendInput, ^+{]}
+        }
+    } else if (IsActiveTabScrollWindow()) {
         if (direction = "up") {
             SendInput, ^+{Tab}
         } else {
@@ -1470,7 +1509,15 @@ return
 #s::OpenPowerShellHere()
 F12::TurnOffMonitors()
 ^!q::ExitApp
-#If (HotkeysEnabled && GetKeyState("Shift", "P") && !GetKeyState("MButton", "P"))
+#If (HotkeysEnabled && GetKeyState("Ctrl", "P") && GetKeyState("Shift", "P") && !GetKeyState("MButton", "P"))
+; Ctrl+Shift+wheel moves the active window between virtual desktops.
+*WheelUp::
+    MoveActiveWindowToRightDesktop()
+    return
+*WheelDown::
+    MoveActiveWindowToLeftDesktop()
+    return
+#If (HotkeysEnabled && GetKeyState("Shift", "P") && !GetKeyState("Ctrl", "P") && !GetKeyState("MButton", "P"))
 ; Shift+wheel cycles tabs in supported apps, otherwise it falls back to plain scrolling.
 *WheelUp::
     HandleShiftWheel("up")

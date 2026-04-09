@@ -1,8 +1,6 @@
 # output dirs
 /target/
 /target/**
-/dll/
-/testbin/
 /out/
 /tmp/
 
@@ -17,15 +15,15 @@
 _*
 
 # editor / IDE
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# operating system
+# operating system / shell shortcuts
 .DS_Store
 Thumbs.db
+*.lnk
 
 # logs and temp artifacts
 *.log
