@@ -1030,15 +1030,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "testbin"
-version = "0.0.1"
-dependencies = [
- "once_cell",
- "winit",
- "winvd",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"

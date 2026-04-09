@@ -76,9 +76,11 @@ impl DesktopEventThread {
                                 "Listener is not connected, or failed to register, trying again",
                             );
 
-                            // Drop will unregister the old listener before the
-                            // new one is created, this is required, read more
-                            // from note-IVirtualDesktopNotification.md
+                            // Drop unregisters the old listener before we
+                            // create a replacement. This avoids reusing a
+                            // stale notification cookie after explorer.exe
+                            // restarts and preserves the COM ownership rules
+                            // for notification parameters.
                             drop(listener);
                             let sender_new = sender.clone();
                             listener = VirtualDesktopNotificationWrapper::new(

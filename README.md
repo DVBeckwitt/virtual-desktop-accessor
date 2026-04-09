@@ -13,17 +13,12 @@ The upstream Rust crate documentation still lives in [README-crate.md](./README-
 - Windows 11 24H2 or newer
 - Rust if you want to build the DLL from source
 - AutoHotkey v1 for `quick-desktop-hotkeys.ahk`
-- AutoHotkey v1 or v2 for the example scripts, depending on which example you run
 
 ## Repository Layout
 
 - `src/`: core `winvd` Rust implementation
 - `dll/`: builds `VirtualDesktopAccessor.dll`
-- `testbin/`: small `winit` harness for exercising desktop events during development
-- `example.ahk`: AutoHotkey v1 example that loads the built DLL from `target\debug`
-- `example.ah2`: AutoHotkey v2 example that loads the built DLL from `target\debug`
 - `quick-desktop-hotkeys.ahk`: personal desktop-navigation script with app-specific helpers
-- `note-IVirtualDesktopNotification.md`: implementation notes tied to the COM notification handling
 
 ## Building
 
@@ -48,7 +43,7 @@ If you only need a prebuilt DLL, you can also use the upstream [release download
 
 ## AutoHotkey Scripts
 
-The example scripts are generic DLL usage samples. The `quick-desktop-hotkeys.ahk` script is intentionally local and expects a few machine-specific paths near the top of the file to be adjusted before use:
+The `quick-desktop-hotkeys.ahk` script is intentionally local and expects a few machine-specific paths near the top of the file to be adjusted before use:
 
 - `VDA_PATH`
 - `RestartShortcutPath`

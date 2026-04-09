@@ -9,7 +9,7 @@ https://github.com/ciantic/VirtualDesktopAccessor/tree/rust/
 ### Example
 
 ```rust
-use winvd::{switch_desktop, get_desktop_count, DesktopEvent, listen_desktop_events};
+use winvd::{get_desktop_count, listen_desktop_events, switch_desktop, DesktopEvent};
 
 fn main() {
     // Desktop count
@@ -36,7 +36,8 @@ fn main() {
 }
 ```
 
-WIP see more examples from the [testbin sources 🢅](https://github.com/Ciantic/VirtualDesktopAccessor/blob/rust/testbin/src/main.rs).
+`listen_desktop_events` also accepts `crossbeam_channel::Sender<T>` and, with the
+optional `winit` feature enabled, `winit::event_loop::EventLoopProxy<T>`.
 
 ### Notes
 
