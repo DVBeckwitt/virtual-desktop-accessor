@@ -4,6 +4,7 @@
 #NoEnv
 #UseHook On
 #InstallKeybdHook
+#InstallMouseHook
 #SingleInstance Force
 SetWorkingDir, %A_ScriptDir%
 SetBatchLines, -1
@@ -93,6 +94,36 @@ SendPlainPageDown() {
     }
     if (rightCtrlDown) {
         SendInput, {RCtrl down}
+    }
+}
+
+HandleShiftWheel(direction) {
+    leftShiftDown := GetKeyState("LShift", "P")
+    rightShiftDown := GetKeyState("RShift", "P")
+    if (leftShiftDown) {
+        SendInput, {LShift up}
+    }
+    if (rightShiftDown) {
+        SendInput, {RShift up}
+    }
+    if (IsActiveTabScrollWindow()) {
+        if (direction = "up") {
+            SendInput, ^+{Tab}
+        } else {
+            SendInput, ^{Tab}
+        }
+    } else {
+        if (direction = "up") {
+            SendInput, {WheelUp}
+        } else {
+            SendInput, {WheelDown}
+        }
+    }
+    if (leftShiftDown) {
+        SendInput, {LShift down}
+    }
+    if (rightShiftDown) {
+        SendInput, {RShift down}
     }
 }
 
@@ -1439,13 +1470,15 @@ return
 #s::OpenPowerShellHere()
 F12::TurnOffMonitors()
 ^!q::ExitApp
-; Force Ctrl+wheel to scroll without zoom in every app.
-^WheelUp::
-    SendInput, {WheelUp}
+#If (HotkeysEnabled && GetKeyState("Shift", "P") && !GetKeyState("MButton", "P"))
+; Shift+wheel cycles tabs in supported apps, otherwise it falls back to plain scrolling.
+*WheelUp::
+    HandleShiftWheel("up")
     return
-^WheelDown::
-    SendInput, {WheelDown}
+*WheelDown::
+    HandleShiftWheel("down")
     return
+#If HotkeysEnabled
 MButton & WheelUp::
     if (GetKeyState("Ctrl", "P") && GetKeyState("Shift", "P")) {
         MoveActiveWindowToRightDesktop()
