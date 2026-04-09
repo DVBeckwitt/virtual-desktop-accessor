@@ -1,5 +1,5 @@
 ; AutoHotkey v1 script
-; Bind Ctrl+1..Ctrl+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
+; Bind Ctrl+1..Ctrl+0 and Win+1..Win+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
 
 #NoEnv
 #UseHook On
@@ -1357,6 +1357,16 @@ __CtrlD_PageUp:
 ^8::GoToDesktopIfExists(7)
 ^9::GoToDesktopIfExists(8)
 ^0::GoToDesktopIfExists(9)
+#1::GoToDesktopIfExists(0)
+#2::GoToDesktopIfExists(1)
+#3::GoToDesktopIfExists(2)
+#4::GoToDesktopIfExists(3)
+#5::GoToDesktopIfExists(4)
+#6::GoToDesktopIfExists(5)
+#7::GoToDesktopIfExists(6)
+#8::GoToDesktopIfExists(7)
+#9::GoToDesktopIfExists(8)
+#0::GoToDesktopIfExists(9)
 #c::FocusCodex(0)
 ^#c::FocusCodex(1)
 !-::
@@ -1429,6 +1439,13 @@ return
 #s::OpenPowerShellHere()
 F12::TurnOffMonitors()
 ^!q::ExitApp
+; Force Ctrl+wheel to scroll without zoom in every app.
+^WheelUp::
+    SendInput, {WheelUp}
+    return
+^WheelDown::
+    SendInput, {WheelDown}
+    return
 MButton & WheelUp::
     if (GetKeyState("Ctrl", "P") && GetKeyState("Shift", "P")) {
         MoveActiveWindowToRightDesktop()
