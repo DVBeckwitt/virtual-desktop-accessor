@@ -11,6 +11,7 @@ SetBatchLines, -1
 FileGetTime, LastScriptModTime, %A_ScriptFullPath%, M
 RestartShortcutPath := "C:\Users\Kenpo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\quick-desktop-hotkeys.ahk - Shortcut.lnk"
 FallbackScriptPath := "C:\Users\Kenpo\OneDrive\Documents\GitHub\virtual-desktop-accessor\quick-desktop-hotkeys.ahk"
+RA_SIM_RUN_PATH := "C:\Users\Kenpo\OneDrive\Documents\GitHub\PhD Work\ra_sim\run_ra_sim.bat"
 
 ; Load the DLL from your installed location
 VDA_PATH := "C:\Users\Kenpo\OneDrive\VirtualDesktopAccessor-rust\VirtualDesktopAccessor.dll"
@@ -1361,6 +1362,17 @@ OpenPhoneLink() {
     Run, %PHONE_LINK_RUN_HINT%
 }
 
+OpenRaSim() {
+    global RA_SIM_RUN_PATH
+
+    if (!FileExist(RA_SIM_RUN_PATH)) {
+        MsgBox, 16, quick-desktop-hotkeys, RA sim launcher was not found at:`n%RA_SIM_RUN_PATH%
+        return
+    }
+
+    Run, % """" . RA_SIM_RUN_PATH . """"
+}
+
 TurnOffMonitors() {
     ; Launch the built-in black screen saver directly.
     screensaverPath := A_WinDir . "\System32\scrnsave.scr"
@@ -1453,7 +1465,7 @@ RAlt & Tab::
     }
     SendInput, {Alt down}{Tab}
     return
-; Vim-like movement/editing helpers (keeping only Alt+U/Alt+D for now)
+; Alt-based helpers outside Neovim.
 #If (HotkeysEnabled && !IsActiveNeovimWindow())
 !u::
     if (GetKeyState("Shift", "P")) {
@@ -1486,6 +1498,7 @@ $^d::
 #w::FocusRustDesk(0)
 ^#w::FocusRustDesk(1)
 #o::OpenPhoneLink()
+!g::OpenRaSim()
 #If (HotkeysEnabled && !GetKeyState("Alt", "P") && !GetKeyState("Ctrl", "P"))
 #x::FocusChatGPT(0)
 #If HotkeysEnabled
