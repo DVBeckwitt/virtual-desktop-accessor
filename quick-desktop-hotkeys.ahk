@@ -9,9 +9,11 @@
 SetWorkingDir, %A_ScriptDir%
 SetBatchLines, -1
 FileGetTime, LastScriptModTime, %A_ScriptFullPath%, M
-RestartShortcutPath := "C:\Users\Kenpo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\quick-desktop-hotkeys.ahk - Shortcut.lnk"
+RestartShortcutPath := A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup\quick-desktop-hotkeys.ahk - Shortcut.lnk"
+StartupShortcutPath := RestartShortcutPath
 FallbackScriptPath := "C:\Users\Kenpo\OneDrive\Documents\GitHub\virtual-desktop-accessor\quick-desktop-hotkeys.ahk"
 RA_SIM_RUN_PATH := "C:\Users\Kenpo\OneDrive\Documents\GitHub\PhD Work\ra_sim\run_ra_sim.bat"
+EnsureStartupShortcutExists()
 
 ; Load the DLL from your installed location
 VDA_PATH := "C:\Users\Kenpo\OneDrive\VirtualDesktopAccessor-rust\VirtualDesktopAccessor.dll"
@@ -61,6 +63,7 @@ NEOVIM_PROC_HINTS := "nvim.exe|nvim-qt.exe|Neovide.exe|neovim.exe|Neovim.exe|neo
 NEOVIM_RUN_HINTS := A_ProgramFiles . "\Neovim\bin\nvim-qt.exe|" A_ProgramFiles . "\Neovim\bin\nvim.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim-qt.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim.exe|nvim-qt.exe|nvim.exe"
 CONVERT_SITE_URL := "https://p2r3.github.io/convert/"
 YOUTUBE_MUSIC_URL := "https://music.youtube.com/"
+YOUTUBE_MUSIC_SHORTCUT := "C:\Users\Kenpo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\YouTube Music.lnk"
 HotkeysEnabled := 1
 PendingCtrlDPress := 0
 
@@ -1375,6 +1378,39 @@ OpenRaSim() {
     Run, % """" . RA_SIM_RUN_PATH . """"
 }
 
+EnsureStartupShortcutExists() {
+    global StartupShortcutPath
+
+    if (FileExist(StartupShortcutPath)) {
+        return
+    }
+
+    startupDir := A_AppData . "\Microsoft\Windows\Start Menu\Programs\Startup"
+    if (!FileExist(startupDir)) {
+        FileCreateDir, %startupDir%
+    }
+
+    shell := ComObjCreate("WScript.Shell")
+    if (!IsObject(shell)) {
+        return
+    }
+
+    shortcut := shell.CreateShortcut(StartupShortcutPath)
+    if (!IsObject(shortcut)) {
+        return
+    }
+
+    if (A_AhkPath) {
+        shortcut.TargetPath := A_AhkPath
+        shortcut.Arguments := """" . A_ScriptFullPath . """"
+    } else {
+        shortcut.TargetPath := A_ScriptFullPath
+    }
+    shortcut.WorkingDirectory := A_ScriptDir
+    shortcut.Description := "quick-desktop-hotkeys"
+    shortcut.Save()
+}
+
 OpenConvertSite() {
     global BRAVE_NIGHTLY_RUN_HINT, CONVERT_SITE_URL
 
@@ -1385,11 +1421,11 @@ OpenConvertSite() {
 }
 
 OpenYouTubeMusic() {
-    global BRAVE_NIGHTLY_RUN_HINT, YOUTUBE_MUSIC_URL
+    global BRAVE_NIGHTLY_RUN_HINT, YOUTUBE_MUSIC_SHORTCUT, YOUTUBE_MUSIC_URL
 
-    Run, % BRAVE_NIGHTLY_RUN_HINT . " --new-window """ . YOUTUBE_MUSIC_URL . """"
+    Run, % """" . YOUTUBE_MUSIC_SHORTCUT . """"
     if (ErrorLevel) {
-        Run, % YOUTUBE_MUSIC_URL
+        Run, % BRAVE_NIGHTLY_RUN_HINT . " --new-window """ . YOUTUBE_MUSIC_URL . """"
     }
 }
 
