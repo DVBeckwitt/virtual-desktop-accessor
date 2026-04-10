@@ -66,6 +66,8 @@ YOUTUBE_MUSIC_URL := "https://music.youtube.com/"
 YOUTUBE_MUSIC_SHORTCUT := "C:\Users\Kenpo\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\YouTube Music.lnk"
 HotkeysEnabled := 1
 PendingCtrlDPress := 0
+CapsLockDoubleTapMs := 350
+LastCapsLockTapTick := 0
 
 SendPlainPageUp() {
     leftCtrlDown := GetKeyState("LCtrl", "P")
@@ -213,6 +215,19 @@ GoToNextDesktop() {
         target := 0
     }
     GoToDesktopIfExists(target)
+}
+
+HandleCapsLockTap() {
+    global CapsLockDoubleTapMs, LastCapsLockTapTick
+
+    now := A_TickCount
+    if (LastCapsLockTapTick && (now - LastCapsLockTapTick) <= CapsLockDoubleTapMs) {
+        LastCapsLockTapTick := 0
+        SetCapsLockState, % GetKeyState("CapsLock", "T") ? "Off" : "On"
+        return
+    }
+
+    LastCapsLockTapTick := now
 }
 
 IsActiveBraveWindow() {
@@ -1485,7 +1500,7 @@ __CtrlD_PageUp:
     return
 
 #If HotkeysEnabled
-CapsLock::SetCapsLockState, % GetKeyState("CapsLock", "T") ? "Off" : "On"
+CapsLock::HandleCapsLockTap()
 CapsLock & 1::GoToDesktopIfExists(0)
 CapsLock & 2::GoToDesktopIfExists(1)
 CapsLock & 3::GoToDesktopIfExists(2)
