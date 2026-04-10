@@ -59,6 +59,7 @@ PHONE_LINK_RUN_HINT := "ms-phone:"
 NEOVIM_TITLE_HINTS := "Neovim|Neovide|NeoVim"
 NEOVIM_PROC_HINTS := "nvim.exe|nvim-qt.exe|Neovide.exe|neovim.exe|Neovim.exe|neovide.exe"
 NEOVIM_RUN_HINTS := A_ProgramFiles . "\Neovim\bin\nvim-qt.exe|" A_ProgramFiles . "\Neovim\bin\nvim.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim-qt.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim.exe|nvim-qt.exe|nvim.exe"
+CONVERT_SITE_URL := "https://p2r3.github.io/convert/"
 HotkeysEnabled := 1
 PendingCtrlDPress := 0
 
@@ -1373,6 +1374,15 @@ OpenRaSim() {
     Run, % """" . RA_SIM_RUN_PATH . """"
 }
 
+OpenConvertSite() {
+    global BRAVE_NIGHTLY_RUN_HINT, CONVERT_SITE_URL
+
+    Run, % BRAVE_NIGHTLY_RUN_HINT . " --new-window """ . CONVERT_SITE_URL . """"
+    if (ErrorLevel) {
+        Run, % CONVERT_SITE_URL
+    }
+}
+
 TurnOffMonitors() {
     ; Launch the built-in black screen saver directly.
     screensaverPath := A_WinDir . "\System32\scrnsave.scr"
@@ -1501,6 +1511,7 @@ $^d::
 !g::OpenRaSim()
 #If (HotkeysEnabled && !GetKeyState("Alt", "P") && !GetKeyState("Ctrl", "P"))
 #x::FocusChatGPT(0)
+#z::OpenConvertSite()
 #If HotkeysEnabled
 !x::OpenChatGPTWithSelectionOrClipboard()
 #!x::OpenChatGPTWithSelectionOrClipboard()
