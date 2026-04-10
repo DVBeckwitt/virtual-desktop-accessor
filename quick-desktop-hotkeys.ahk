@@ -60,6 +60,7 @@ NEOVIM_TITLE_HINTS := "Neovim|Neovide|NeoVim"
 NEOVIM_PROC_HINTS := "nvim.exe|nvim-qt.exe|Neovide.exe|neovim.exe|Neovim.exe|neovide.exe"
 NEOVIM_RUN_HINTS := A_ProgramFiles . "\Neovim\bin\nvim-qt.exe|" A_ProgramFiles . "\Neovim\bin\nvim.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim-qt.exe|" A_LocalAppData . "\Programs\Neovim\bin\nvim.exe|nvim-qt.exe|nvim.exe"
 CONVERT_SITE_URL := "https://p2r3.github.io/convert/"
+YOUTUBE_MUSIC_URL := "https://music.youtube.com/"
 HotkeysEnabled := 1
 PendingCtrlDPress := 0
 
@@ -1383,6 +1384,15 @@ OpenConvertSite() {
     }
 }
 
+OpenYouTubeMusic() {
+    global BRAVE_NIGHTLY_RUN_HINT, YOUTUBE_MUSIC_URL
+
+    Run, % BRAVE_NIGHTLY_RUN_HINT . " --new-window """ . YOUTUBE_MUSIC_URL . """"
+    if (ErrorLevel) {
+        Run, % YOUTUBE_MUSIC_URL
+    }
+}
+
 TurnOffMonitors() {
     ; Launch the built-in black screen saver directly.
     screensaverPath := A_WinDir . "\System32\scrnsave.scr"
@@ -1512,6 +1522,7 @@ $^d::
 #If (HotkeysEnabled && !GetKeyState("Alt", "P") && !GetKeyState("Ctrl", "P"))
 #x::FocusChatGPT(0)
 #z::OpenConvertSite()
+#y::OpenYouTubeMusic()
 #If HotkeysEnabled
 !x::OpenChatGPTWithSelectionOrClipboard()
 #!x::OpenChatGPTWithSelectionOrClipboard()
