@@ -1,5 +1,5 @@
 ; AutoHotkey v1 script
-; Bind Ctrl+1..Ctrl+0 and Win+1..Win+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
+; Bind Ctrl+1..Ctrl+0, Win+1..Win+0, and CapsLock+1..CapsLock+0 to jump directly to virtual desktops 1..10 (0-indexed internally).
 
 #NoEnv
 #UseHook On
@@ -1485,6 +1485,17 @@ __CtrlD_PageUp:
     return
 
 #If HotkeysEnabled
+CapsLock::SetCapsLockState, % GetKeyState("CapsLock", "T") ? "Off" : "On"
+CapsLock & 1::GoToDesktopIfExists(0)
+CapsLock & 2::GoToDesktopIfExists(1)
+CapsLock & 3::GoToDesktopIfExists(2)
+CapsLock & 4::GoToDesktopIfExists(3)
+CapsLock & 5::GoToDesktopIfExists(4)
+CapsLock & 6::GoToDesktopIfExists(5)
+CapsLock & 7::GoToDesktopIfExists(6)
+CapsLock & 8::GoToDesktopIfExists(7)
+CapsLock & 9::GoToDesktopIfExists(8)
+CapsLock & 0::GoToDesktopIfExists(9)
 ^1::GoToDesktopIfExists(0)
 ^2::GoToDesktopIfExists(1)
 ^3::GoToDesktopIfExists(2)
@@ -1505,6 +1516,8 @@ __CtrlD_PageUp:
 #8::GoToDesktopIfExists(7)
 #9::GoToDesktopIfExists(8)
 #0::GoToDesktopIfExists(9)
+$^#Left::GoToPrevDesktop()
+$^#Right::GoToNextDesktop()
 #c::FocusCodex(0)
 ^#c::FocusCodex(1)
 !-::
